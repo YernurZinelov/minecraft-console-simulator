@@ -1,16 +1,17 @@
 package service;
 
 import enums.LocationType;
-import exceptions.InvalidDataException;
 import model.base.Mob;
 import model.entities.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class AdventureEngine {
-    private EntityManager entityManager;
-    private CombatSystem combatSystem;
+
+    private final EntityManager entityManager;
+    private final CombatSystem combatSystem;
 
     public AdventureEngine(EntityManager entityManager, CombatSystem combatSystem) {
         this.entityManager = entityManager;
@@ -21,24 +22,15 @@ public class AdventureEngine {
         System.out.println("=== PLAYER: " + player.getName() + " IS ATTEMPTING TO BEAT MINECRAFT ===");
         System.out.println();
 
-        boolean hasWonFirstOne = hasBeatenMobsInTheLocation(player, LocationType.PLAIN);
-        if (!hasWonFirstOne) {
-            return;
-        }
+        List<LocationType> locationsList = new ArrayList<>();
 
-        boolean hasWonSecondOne = hasBeatenMobsInTheLocation(player, LocationType.CAVE);
-        if (!hasWonSecondOne) {
-            return;
-        }
+        locationsList.add(LocationType.PLAIN);
+        locationsList.add(LocationType.CAVE);
+        locationsList.add(LocationType.NETHER);
+        locationsList.add(LocationType.END);
 
-        boolean hasWonThirdOne = hasBeatenMobsInTheLocation(player, LocationType.NETHER);
-        if (!hasWonThirdOne) {
-            return;
-        }
-
-        boolean hasWonLastOne = hasBeatenMobsInTheLocation(player, LocationType.END);
-        if (!hasWonLastOne) {
-            return;
+        for (LocationType l : locationsList) {
+            if (!hasBeatenMobsInTheLocation(player, l)) return;
         }
 
         System.out.println("=== CONGRATULATIONS!!! ===");
@@ -61,15 +53,8 @@ public class AdventureEngine {
                 switch (mob.getBehavior()) {
                     case HOSTILE:
                         System.out.println("\n⚔️ 🔴 AGGRESSIVE MOB SPOTTED! [" + mob.getName() + "] attacks!");
-                        combatSystem.oneVSOne(player, mob);
+                        if (!conductFight(player, mob)) return false;
                         hadFights = true;
-
-                        if (player.getHealthPoints() <= 0) {
-                            System.out.println("Player: " + player.getName() + " has been defeated by " + mob.getName());
-                            System.out.println("His journey ends there...");
-                            return false;
-                        }
-                        System.out.println("⭐ Success! " + mob.getName() + " is no more. Moving forward...");
                         break;
 
                     case NEUTRAL:
@@ -77,15 +62,8 @@ public class AdventureEngine {
                         boolean accidentallyHit = random.nextBoolean();
                         if (accidentallyHit) {
                             System.out.println("💥 OOPS! You accidentally hit it!");
-                            combatSystem.oneVSOne(player, mob);
+                            if (!conductFight(player, mob)) return false;
                             hadFights = true;
-
-                            if (player.getHealthPoints() <= 0) {
-                                System.out.println("Player: " + player.getName() + " has been defeated by " + mob.getName());
-                                System.out.println("His journey ends there...");
-                                return false;
-                            }
-                            System.out.println("⭐ Success! Defeated the provoked " + mob.getName() + ".");
                         } else {
                             System.out.println("🍃 Safe! You carefully walked past " + mob.getName() + ".");
                         }
@@ -109,6 +87,18 @@ public class AdventureEngine {
         }
         System.out.println("🚀 Advancing to the next dimension...");
         System.out.println("--------------------------------------------------");
+        return true;
+    }
+
+    private boolean conductFight(Player player, Mob mob) {
+        combatSystem.oneVSOne(player, mob);
+
+        if (player.getHealthPoints() <= 0) {
+            System.out.println("Player: " + player.getName() + " has been defeated by " + mob.getName());
+            System.out.println("His journey ends there...");
+            return false;
+        }
+        System.out.println("⭐ Success! " + mob.getName() + " is no more. Moving forward...");
         return true;
     }
 }
