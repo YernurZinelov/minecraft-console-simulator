@@ -1,51 +1,30 @@
 package service;
 
 import exceptions.EntityDeadException;
+import exceptions.ZeroDamageException;
 import model.base.EffectApplier;
 import model.base.Entity;
-import model.entities.WitherSkeleton;
 
 import java.util.*;
 
 public class CombatSystem {
 
+    private final Random random = new Random();
+
     public void oneVSOne(Entity e1, Entity e2) {
 
         // === 1. Validation ===
-        if (e1.getHealthPoints() <= 0 && e2.getHealthPoints() <= 0)
-            throw new EntityDeadException("Both entities [" + e1.getName() + "] and [" + e2.getName()+ "] are dead! " +
-                    "Verdict: Combat request was rejected.");
-        if (e1.getHealthPoints() <= 0 && e2.getHealthPoints() > 0)
-            throw new EntityDeadException("Entity [" + e1.getName() + "] is already dead. " +
-                    "Entity [" + e2.getName() + "] is the winner.");
-        if (e2.getHealthPoints() <= 0)
-            throw new EntityDeadException("Entity [" + e2.getName() + "] is already dead. " +
-                    "Entity [" + e1.getName() + "] is the winner.");
-
-        if (e1.getDamagePoints() <= 0 && e2.getDamagePoints() <= 0) {
-            System.out.println("Both entities [" + e1.getName() + "] and [" + e2.getName()+ "] have 0 damaging points! " +
-                    "Verdict: Combat request was rejected.");
-            return;
-        }
+        validateFighters(e1, e2);
 
         // === 2. Combat Initialization ===
-        Random random = new Random();
-        boolean e1Starts = random.nextBoolean();
-
         double timer = 0.0;
         int e1AttackCount = 1;
         int e2AttackCount = 1;
 
         System.out.println(e1.getName() + " VS " + e2.getName());
 
-        // === Who hits first (maybe even Bonus Hit) ===
-        if (e1Starts) {
-            e2.takeDamage(e1.getDamagePoints());
-            System.out.println("[" + e1.getName() + "] hits first!");
-        } else {
-            e1.takeDamage(e2.getDamagePoints());
-            System.out.println("[" + e2.getName() + "] hits first!");
-        }
+        // === Who hits first? ===
+        determineFirstAttacker(e1, e2);
 
         boolean e1IsWithered = false;
         boolean e2IsWithered = false;
@@ -90,7 +69,10 @@ public class CombatSystem {
                 e1WitheringPeriod -= 0.1;
 
                 if (timer >= e1NextWitherDamageTime) {
-                    ((WitherSkeleton) e2).applyEffect(e1);
+
+                    if (e2 instanceof EffectApplier applier) {
+                        applier.applyEffect(e1);
+                    }
 
                     e1NextWitherDamageTime = timer + 2.0;
                 }
@@ -103,7 +85,10 @@ public class CombatSystem {
                 e2WitheringPeriod -= 0.1;
 
                 if (timer >= e2NextWitherDamageTime) {
-                    ((WitherSkeleton) e1).applyEffect(e2);
+
+                    if (e1 instanceof EffectApplier applier) {
+                        applier.applyEffect(e2);
+                    }
 
                     e2NextWitherDamageTime = timer + 2.0;
                 }
@@ -119,6 +104,39 @@ public class CombatSystem {
             timer += 0.1;
         }
 
+        // === Determining the winner ===
+        determineWinner(e1, e2);
+    }
+
+    private void validateFighters(Entity e1, Entity e2) {
+        if (e1.getHealthPoints() <= 0 && e2.getHealthPoints() <= 0)
+            throw new EntityDeadException("Both entities [" + e1.getName() + "] and [" + e2.getName()+ "] are dead! " +
+                    "Verdict: Request for combat was cancelled.");
+        if (e1.getHealthPoints() <= 0 && e2.getHealthPoints() > 0)
+            throw new EntityDeadException("Entity [" + e1.getName() + "] is already dead. " +
+                    "Entity [" + e2.getName() + "] is the winner.");
+        if (e2.getHealthPoints() <= 0)
+            throw new EntityDeadException("Entity [" + e2.getName() + "] is already dead. " +
+                    "Entity [" + e1.getName() + "] is the winner.");
+
+        if (e1.getDamagePoints() <= 0 && e2.getDamagePoints() <= 0)
+            throw new ZeroDamageException("Both entities [" + e1.getName() + "] and [" + e2.getName()+ "] have 0 damaging points! " +
+                    "Verdict: Request for combat was cancelled.");
+    }
+
+    private void determineFirstAttacker(Entity e1, Entity e2) {
+        boolean e1Starts = random.nextBoolean();
+
+        if (e1Starts) {
+            e2.takeDamage(e1.getDamagePoints());
+            System.out.println("[" + e1.getName() + "] hits first!");
+        } else {
+            e1.takeDamage(e2.getDamagePoints());
+            System.out.println("[" + e2.getName() + "] hits first!");
+        }
+    }
+
+    private void determineWinner(Entity e1, Entity e2) {
         if (e1.getHealthPoints() <= 0 && e2.getHealthPoints() <= 0) {
             System.out.println("Both [" + e1.getName() + "] and [" + e2.getName() + "] are dead. Verdict: Draw");
             return;
