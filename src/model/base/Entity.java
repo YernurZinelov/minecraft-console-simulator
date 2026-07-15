@@ -83,7 +83,7 @@ public abstract class Entity {
     }
 
     public void takeDamage(double amount) {
-        healthPoints -= amount;
+        setHealthPoints(healthPoints - amount);
     }
 
     @Override
