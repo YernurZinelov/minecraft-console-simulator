@@ -11,8 +11,7 @@ public class Player extends Entity {
     private Armor armor;
     private final double maxHealthPoints;
 
-    public Player(String name, double healthPoints, double damagePoints, double attackSpeed)
-            throws InvalidDataException {
+    public Player(String name, double healthPoints, double damagePoints, double attackSpeed) {
         super(name, healthPoints, damagePoints, attackSpeed, false);
         this.weapon = null;
         this.armor = null;

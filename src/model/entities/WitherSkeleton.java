@@ -11,8 +11,7 @@ public class WitherSkeleton extends Mob implements EffectApplier {
 
     private final double witherEffectDamage = 1.0;
 
-    public WitherSkeleton(String name, double healthPoints, double damagePoints, double attackSpeed)
-            throws InvalidDataException {
+    public WitherSkeleton(String name, double healthPoints, double damagePoints, double attackSpeed) {
         super(name, healthPoints, damagePoints, attackSpeed, true, LocationType.NETHER, MobBehavior.HOSTILE);
     }
 
