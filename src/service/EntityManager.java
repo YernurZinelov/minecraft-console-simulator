@@ -11,13 +11,13 @@ import java.util.*;
 public class EntityManager {
     private final List<Entity> entities = new ArrayList<>();
 
-    public void addEntities(Entity entity) {
+    public void addEntity(Entity entity) {
         if (entities.contains(entity))
             throw new DuplicateEntityException("Entity [" + entity.getName() + "] already exist. No duplication allowed!");
         entities.add(entity);
     }
 
-    public void removeEntities(String name) {
+    public void removeEntity(String name) {
         Optional<Entity> optionalEntity = findByName(name);
         if (optionalEntity.isPresent()) {
             entities.remove(optionalEntity.get());
@@ -34,6 +34,12 @@ public class EntityManager {
             }
         }
         return Optional.empty();
+    }
+
+    public List<Entity> getEntitiesSorted(Comparator<Entity> comparator) {
+        List<Entity> sorted = new ArrayList<>(entities);
+        sorted.sort(comparator);
+        return sorted;
     }
 
     public List<Entity> getEntitiesSortedByHealth() {
