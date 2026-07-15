@@ -1,3 +1,5 @@
+import exceptions.EntityDeadException;
+import exceptions.ZeroDamageException;
 import model.base.Entity;
 import model.base.Mob;
 import model.entities.*;
@@ -6,6 +8,8 @@ import service.AdventureEngine;
 import service.CombatSystem;
 import exceptions.InvalidDataException;
 import service.EntityManager;
+
+import java.util.Comparator;
 
 public class Main {
     public static void main(String[] args) {
@@ -52,19 +56,19 @@ public class Main {
 
             CombatSystem combatSystem = new CombatSystem();
 
-            entityManager.addEntities(mob1);
-            entityManager.addEntities(mob2);
-            entityManager.addEntities(mob3);
-            entityManager.addEntities(mob4);
-            entityManager.addEntities(mob5);
-            entityManager.addEntities(mob6);
-            entityManager.addEntities(mob7);
+            entityManager.addEntity(mob1);
+            entityManager.addEntity(mob2);
+            entityManager.addEntity(mob3);
+            entityManager.addEntity(mob4);
+            entityManager.addEntity(mob5);
+            entityManager.addEntity(mob6);
+            entityManager.addEntity(mob7);
 
-            entityManager.addEntities(player1);
-            entityManager.addEntities(player2);
-            entityManager.addEntities(player3);
-            entityManager.addEntities(player4);
-            entityManager.addEntities(player5);
+            entityManager.addEntity(player1);
+            entityManager.addEntity(player2);
+            entityManager.addEntity(player3);
+            entityManager.addEntity(player4);
+            entityManager.addEntity(player5);
 
             entityManager.printList();
             System.out.println();
@@ -78,8 +82,8 @@ public class Main {
             entityManager.printList();
             System.out.println();
 
-            entityManager.removeEntities("Zombie");
-            entityManager.removeEntities("Wither Skeleton");
+            entityManager.removeEntity("Zombie");
+            entityManager.removeEntity("Wither Skeleton");
             System.out.println();
 
             entityManager.printList();
@@ -89,7 +93,7 @@ public class Main {
             System.out.println();
 
             int i = 1;
-            for (Entity entity : entityManager.getEntitiesSortedByHealth().reversed()) {
+            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getHealthPoints)).reversed()) {
                 System.out.println(i + ". " + entity);
                 i++;
             }
@@ -99,7 +103,7 @@ public class Main {
             System.out.println();
 
             int j = 1;
-            for (Entity entity : entityManager.getEntitiesSortedByDamage()) {
+            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getDamagePoints))) {
                 System.out.println(j + ". " + entity);
                 j++;
             }
@@ -109,7 +113,7 @@ public class Main {
             System.out.println();
 
             int n = 1;
-            for (Entity entity : entityManager.getEntitiesSortedByAttackSpeed()) {
+            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getAttackSpeed))) {
                 System.out.println(n + ". " + entity);
                 n++;
             }
@@ -131,6 +135,12 @@ public class Main {
 
         } catch (InvalidDataException e) {
             System.err.println("Error of initializing in a game! Wrong parameters: " + e.getMessage());
+        } catch (EntityDeadException e) {
+            System.out.println("❌ Ошибка боя: " + e.getMessage());
+        } catch (ZeroDamageException e) {
+            System.out.println("⚠️ Невозможно начать битву: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Произошла непредвиденная ошибка системы: " + e.getMessage());
         }
     }
 }
