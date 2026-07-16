@@ -10,6 +10,7 @@ import exceptions.InvalidDataException;
 import service.EntityManager;
 
 import java.util.Comparator;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -52,7 +53,7 @@ public class Main {
             player5.setArmor(armor2);
 
             // === 5. Initializing a combat system ===
-            EntityManager entityManager = new EntityManager();
+            EntityManager<Entity> entityManager = new EntityManager<>();
 
             CombatSystem combatSystem = new CombatSystem();
 
@@ -91,43 +92,22 @@ public class Main {
 
             System.out.println("=== Entities ranked by [HP]: ===");
             System.out.println();
-
-            int i = 1;
-            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getHealthPoints)).reversed()) {
-                System.out.println(i + ". " + entity);
-                i++;
-            }
-
+            printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getHealthPoints)).reversed());
             System.out.println();
+
             System.out.println("=== Entities sorted by [Damage Points]: ===");
             System.out.println();
-
-            int j = 1;
-            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getDamagePoints))) {
-                System.out.println(j + ". " + entity);
-                j++;
-            }
-
+            printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getDamagePoints)));
             System.out.println();
+
             System.out.println("=== Entities sorted by [Attack Speed]: ===");
             System.out.println();
-
-            int n = 1;
-            for (Entity entity : entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getAttackSpeed))) {
-                System.out.println(n + ". " + entity);
-                n++;
-            }
-
+            printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getAttackSpeed)));
             System.out.println();
+
             System.out.println("=== Entities filtered by [Special Effects]: ===");
             System.out.println();
-
-            int k = 1;
-            for (Entity entity : entityManager.getEntitiesFilteredBySpecialEffect()) {
-                System.out.println(k + ". " + entity);
-                k++;
-            }
-
+            printNumberedList(entityManager.getEntitiesFilteredBySpecialEffect());
             System.out.println();
 
             AdventureEngine adventureEngine = new AdventureEngine(entityManager, combatSystem);
@@ -141,6 +121,14 @@ public class Main {
             System.out.println("⚠️ Невозможно начать битву: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Произошла непредвиденная ошибка системы: " + e.getMessage());
+        }
+    }
+
+    private static void printNumberedList(List<? extends Entity> list) {
+        int index = 1;
+        for (Entity entity : list) {
+            System.out.println(index + ". " + entity);
+            index++;
         }
     }
 }
