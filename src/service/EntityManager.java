@@ -28,56 +28,29 @@ public class EntityManager {
     }
 
     public Optional<Entity> findByName(String name) {
-        for (Entity entity : entities) {
-            if (entity.getName().equals(name)) {
-                return Optional.of(entity);
-            }
-        }
-        return Optional.empty();
+        return entities.stream()
+                .filter(e -> e.getName().equals(name))
+                .findFirst();
     }
 
     public List<Entity> getEntitiesSorted(Comparator<Entity> comparator) {
-        List<Entity> sorted = new ArrayList<>(entities);
-        sorted.sort(comparator);
-        return sorted;
-    }
-
-    public List<Entity> getEntitiesSortedByHealth() {
-        List<Entity> sorted = new ArrayList<>(entities);
-        sorted.sort(Comparator.comparingDouble(Entity::getHealthPoints));
-        return sorted;
-    }
-
-    public List<Entity> getEntitiesSortedByDamage() {
-        List<Entity> sorted = new ArrayList<>(entities);
-        sorted.sort(Comparator.comparingDouble(Entity::getDamagePoints));
-        return sorted;
-    }
-
-    public List<Entity> getEntitiesSortedByAttackSpeed() {
-        List<Entity> sorted = new ArrayList<>(entities);
-        sorted.sort(Comparator.comparingDouble(Entity::getAttackSpeed));
-        return sorted;
+        return entities.stream()
+                .sorted(comparator)
+                .toList();
     }
 
     public List<Entity> getEntitiesFilteredBySpecialEffect() {
-        List<Entity> filtered = new ArrayList<>();
-        for (Entity entity : entities) {
-            if (entity.hasSpecialEffect()) {
-                filtered.add(entity);
-            }
-        }
-        return filtered;
+        return entities.stream()
+                .filter(Entity::hasSpecialEffect)
+                .toList();
     }
 
     public List<Mob> getMobsByLocation(LocationType location) {
-        List<Mob> mobList = new ArrayList<>();
-        for (Entity e : entities) {
-            if (e instanceof Mob && ((Mob) e).getMainLocation() == location) {
-                mobList.add((Mob)e);
-            }
-        }
-        return mobList;
+        return entities.stream()
+                .filter(entity -> entity instanceof Mob)
+                .map(entity -> (Mob) entity)
+                .filter(mob -> mob.getMainLocation() == location)
+                .toList();
     }
 
     public void printList() {
