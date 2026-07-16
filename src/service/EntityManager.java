@@ -8,38 +8,36 @@ import model.base.Mob;
 
 import java.util.*;
 
-public class EntityManager {
-    private final List<Entity> entities = new ArrayList<>();
+public class EntityManager<T extends Entity> {
+    private final List<T> entities = new ArrayList<>();
 
-    public void addEntity(Entity entity) {
+    public void addEntity(T entity) {
         if (entities.contains(entity))
             throw new DuplicateEntityException("Entity [" + entity.getName() + "] already exist. No duplication allowed!");
         entities.add(entity);
     }
 
     public void removeEntity(String name) {
-        Optional<Entity> optionalEntity = findByName(name);
-        if (optionalEntity.isPresent()) {
-            entities.remove(optionalEntity.get());
-            System.out.println("Entity [" + name + "] was successfully removed from the list.");
-        } else {
-            throw new EntityNotFoundException("Entity with name: [" + name + "] was not found!");
-        }
+        T entity = findByName(name)
+                .orElseThrow(() -> new EntityNotFoundException("Entity with name: [" + name + "] was not found!"));
+
+        entities.remove(entity);
+        System.out.println("Entity [" + name + "] was successfully removed from the list.");
     }
 
-    public Optional<Entity> findByName(String name) {
+    public Optional<T> findByName(String name) {
         return entities.stream()
-                .filter(e -> e.getName().equals(name))
+                .filter(e -> name.equals(e.getName()))
                 .findFirst();
     }
 
-    public List<Entity> getEntitiesSorted(Comparator<Entity> comparator) {
+    public List<T> getEntitiesSorted(Comparator<? super T> comparator) {
         return entities.stream()
                 .sorted(comparator)
                 .toList();
     }
 
-    public List<Entity> getEntitiesFilteredBySpecialEffect() {
+    public List<T> getEntitiesFilteredBySpecialEffect() {
         return entities.stream()
                 .filter(Entity::hasSpecialEffect)
                 .toList();
