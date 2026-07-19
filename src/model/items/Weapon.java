@@ -2,19 +2,21 @@ package model.items;
 
 import exceptions.InvalidDataException;
 
+import java.util.Objects;
+
 public abstract class Weapon {
 
-    private String name;
-    private double bonusDamage;
-    private double bonusAttackSpeed;
+    private final String name;
+    private final double bonusDamage;
+    private final double bonusAttackSpeed;
 
     public Weapon(String name, double bonusDamage, double bonusAttackSpeed) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "Weapon name cannot be null!");
 
-        if (bonusDamage < 0) {
-            throw new InvalidDataException("Bonus damage cannot be less than zero!");
-        }
+        if (bonusDamage < 0) throw new InvalidDataException("Bonus damage cannot be less than zero!");
         this.bonusDamage = bonusDamage;
+
+        if (bonusAttackSpeed <= -0.9) throw new InvalidDataException("Weapon cannot decrease attack speed by more than 0.9 seconds!");
         this.bonusAttackSpeed = bonusAttackSpeed;
     }
 

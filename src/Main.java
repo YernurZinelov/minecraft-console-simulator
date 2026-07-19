@@ -1,19 +1,19 @@
-import exceptions.EntityDeadException;
-import exceptions.ZeroDamageException;
+import exceptions.*;
 import model.base.Entity;
 import model.base.Mob;
 import model.entities.*;
 import model.items.*;
 import service.AdventureEngine;
 import service.CombatSystem;
-import exceptions.InvalidDataException;
 import service.EntityManager;
+import service.Log;
 
 import java.util.Comparator;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        EntityManager<Entity> entityManager = null;
         try {
             // === 1. Creating Mobs ===
             Mob mob1 = new Zombie("Zombie", 20.0, 3.0, 1.0);
@@ -27,7 +27,7 @@ public class Main {
             // === 2. Creating players ===
             Player player1 = new Player("Steve", 20.0, 2.0, 1.0);
             Player player2 = new Player("Alex", 20.0, 2.0, 1.0);
-            Player player3 = new Player("Technoblade", 20.0, 2.0, 1.0);
+            Player player3 = new Player("Technoblade", 20.0, 2.0, 0.5);
             Player player4 = new Player("Dream", 20.0, 2.0, 1.0);
             Player player5 = new Player("MrBeast", 20.0, 2.0, 1.0);
 
@@ -53,7 +53,7 @@ public class Main {
             player5.setArmor(armor2);
 
             // === 5. Initializing a combat system ===
-            EntityManager<Entity> entityManager = new EntityManager<>();
+            entityManager = new EntityManager<>();
 
             CombatSystem combatSystem = new CombatSystem();
 
@@ -72,62 +72,74 @@ public class Main {
             entityManager.addEntity(player5);
 
             entityManager.printList();
-            System.out.println();
+            Log.println("");
 
             // === 6. Organizing duels ===
             combatSystem.oneVSOne(mob1, mob6);
-            System.out.println();
+            Log.println("");
             combatSystem.oneVSOne(mob2, mob3);
-            System.out.println();
+            Log.println("");
 
             entityManager.printList();
-            System.out.println();
+            Log.println("");
 
             entityManager.removeEntity("Zombie");
             entityManager.removeEntity("Wither Skeleton");
-            System.out.println();
+            Log.println("");
 
             entityManager.printList();
-            System.out.println();
+            Log.println("");
 
-            System.out.println("=== Entities ranked by [HP]: ===");
-            System.out.println();
+            Log.println("=== Entities ranked by [HP]: ===");
+            Log.println("");
             printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getHealthPoints)).reversed());
-            System.out.println();
+            Log.println("");
 
-            System.out.println("=== Entities sorted by [Damage Points]: ===");
-            System.out.println();
+            Log.println("=== Entities sorted by [Damage Points]: ===");
+            Log.println("");
             printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getDamagePoints)));
-            System.out.println();
+            Log.println("");
 
-            System.out.println("=== Entities sorted by [Attack Speed]: ===");
-            System.out.println();
+            Log.println("=== Entities sorted by [Attack Speed]: ===");
+            Log.println("");
             printNumberedList(entityManager.getEntitiesSorted(Comparator.comparingDouble(Entity::getAttackSpeed)));
-            System.out.println();
+            Log.println("");
 
-            System.out.println("=== Entities filtered by [Special Effects]: ===");
-            System.out.println();
+            Log.println("=== Entities filtered by [Special Effects]: ===");
+            Log.println("");
             printNumberedList(entityManager.getEntitiesFilteredBySpecialEffect());
-            System.out.println();
+            Log.println("");
 
             AdventureEngine adventureEngine = new AdventureEngine(entityManager, combatSystem);
             adventureEngine.beatingMinecraft(player3);
 
+            Log.println("\n--- Waiting for each effect ticks' ending ... ---");
+            Thread.sleep(10000);
+
         } catch (InvalidDataException e) {
             System.err.println("Error of initializing in a game! Wrong parameters: " + e.getMessage());
         } catch (EntityDeadException e) {
-            System.out.println("❌ Ошибка боя: " + e.getMessage());
+            Log.println("❌ Battle error: " + e.getMessage());
         } catch (ZeroDamageException e) {
-            System.out.println("⚠️ Невозможно начать битву: " + e.getMessage());
+            Log.println("⚠️ Impossible to start the battle: " + e.getMessage());
+        } catch (DuplicateEntityException e) {
+            Log.println("⚠️ Duplication error: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            Log.println("⚠️ Entity not found: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Произошла непредвиденная ошибка системы: " + e.getMessage());
+            Log.println("An unforeseen system error appeared: " + e.getMessage());
+        } finally {
+            if (entityManager != null) {
+                Log.println("\n[System] Shutting down all remaining entity schedulers...");
+                entityManager.getAllEntities().forEach(Entity::shutDownScheduler);
+            }
         }
     }
 
     private static void printNumberedList(List<? extends Entity> list) {
         int index = 1;
         for (Entity entity : list) {
-            System.out.println(index + ". " + entity);
+            Log.println(index + ". " + entity);
             index++;
         }
     }

@@ -1,28 +1,27 @@
 package model.entities;
 
-import exceptions.InvalidDataException;
 import model.items.Armor;
 import model.items.Weapon;
 import model.base.Entity;
 
 public class Player extends Entity {
 
-    private Weapon weapon;
-    private Armor armor;
+    private volatile Weapon weapon;
+    private volatile Armor armor;
     private final double maxHealthPoints;
 
     public Player(String name, double healthPoints, double damagePoints, double attackSpeed) {
-        super(name, healthPoints, damagePoints, attackSpeed, false);
+        super(name, healthPoints, damagePoints, attackSpeed, false, false);
         this.weapon = null;
         this.armor = null;
-        this.maxHealthPoints = healthPoints;
+        this.maxHealthPoints = getHealthPoints();
     }
 
     public Weapon getWeapon() {
         return weapon;
     }
 
-    public void setWeapon(Weapon weapon) {
+    public synchronized void setWeapon(Weapon weapon) {
         this.weapon = weapon;
     }
 
@@ -30,7 +29,7 @@ public class Player extends Entity {
         return armor;
     }
 
-    public void setArmor(Armor armor) {
+    public synchronized void setArmor(Armor armor) {
         this.armor = armor;
     }
 
@@ -42,8 +41,10 @@ public class Player extends Entity {
     public double getDamagePoints() {
         double baseDamage = super.getDamagePoints();
 
-        if (weapon != null) {
-            return baseDamage + weapon.getBonusDamage();
+        Weapon currentWeapon = this.weapon;
+
+        if (currentWeapon != null) {
+            return baseDamage + currentWeapon.getBonusDamage();
         }
         return baseDamage;
     }
@@ -52,18 +53,23 @@ public class Player extends Entity {
     public double getAttackSpeed() {
         double baseAttackSpeed = super.getAttackSpeed();
 
-        if (weapon != null) {
-            return Math.max(0.1, baseAttackSpeed + weapon.getBonusAttackSpeed());
+        Weapon currentWeapon = this.weapon;
+
+        if (currentWeapon != null) {
+            return Math.max(0.1, baseAttackSpeed + currentWeapon.getBonusAttackSpeed());
         }
         return baseAttackSpeed;
     }
 
     @Override
-    public void takeDamage(double amount) {
+    public synchronized void takeDamage(double amount, boolean ignoreArmor) {
         double finalDamage = amount;
-        if (armor != null) {
-            finalDamage = Math.max(0.0, (amount - armor.getProtectionPoints()));
+
+        Armor currentArmor = this.armor;
+
+        if (currentArmor != null && !ignoreArmor) {
+            finalDamage = Math.max(0.0, (amount - currentArmor.getProtectionPoints()));
         }
-        super.takeDamage(finalDamage);
+        super.takeDamage(finalDamage, ignoreArmor);
     }
 }

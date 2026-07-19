@@ -2,13 +2,15 @@ package model.items;
 
 import exceptions.InvalidDataException;
 
+import java.util.Objects;
+
 public abstract class Armor {
 
-    private String name;
-    private double protectionPoints;
+    private final String name;
+    private final double protectionPoints;
 
     public Armor(String name, double protectionPoints) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "Armor name cannot be null!");
 
         if (protectionPoints < 0) {
             throw new InvalidDataException("Armor's protection cannot be less than zero!");
