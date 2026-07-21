@@ -10,6 +10,7 @@ import service.Log;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class Main {
     public static void main(String[] args) {
@@ -139,7 +140,7 @@ public class Main {
     private static void printNumberedList(List<? extends Entity> list) {
         int index = 1;
         for (Entity entity : list) {
-            Log.println(index + ". " + entity);
+            Log.println(String.format(Locale.US, "%2d. %s", index, entity));
             index++;
         }
     }
