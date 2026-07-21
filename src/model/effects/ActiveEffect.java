@@ -35,4 +35,8 @@ public class ActiveEffect {
     public int decrementAndGetTicks() {
         return this.ticksLeft.decrementAndGet();
     }
+
+    public void resetTicks(int ticks) {
+        this.ticksLeft.set(ticks);
+    }
 }
