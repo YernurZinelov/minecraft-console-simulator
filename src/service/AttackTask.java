@@ -23,6 +23,8 @@ public class AttackTask implements Runnable {
         try {
             if (!startsFirst) {
                 Thread.sleep((long) (attacker.getAttackSpeed() * 1000));
+            } else {
+                Log.println(attacker.getName() + " hits first!");
             }
 
             while (!battleIsOver.get() && attacker.isAlive() && defender.isAlive()) {
