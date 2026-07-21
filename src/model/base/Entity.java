@@ -103,25 +103,30 @@ public abstract class Entity {
     }
 
     public void attack(Entity target) {
+        double damage = getDamagePoints();
+        String attackerName = getName();
+
         synchronized (target) {
             double healthBefore = target.getHealthPoints();
-            target.takeDamage(getDamagePoints(), this.ignoreArmor);
+            target.takeDamage(damage, this.ignoreArmor);
             double damageDealt = healthBefore - target.getHealthPoints();
 
             Log.printf("%s hits %s for %.1f damage! (%s has %.1f HP left)\n",
-                    getName(), target.getName(), damageDealt, target.getName(), target.getHealthPoints());
+                    attackerName, target.getName(), damageDealt, target.getName(), target.getHealthPoints());
         }
     }
 
     public void applyActiveEffect(String effectId, EffectApplier applier, int durationSeconds) {
-        ActiveEffect oldEffect = activeEffects.remove(effectId);
-
-        if (oldEffect != null && oldEffect.getScheduledFuture() != null) {
-            oldEffect.getScheduledFuture().cancel(true);
-        }
-
         int period = applier.getTickPeriodSeconds();
         int totalTicks = durationSeconds / period;
+
+        ActiveEffect existingEffect = activeEffects.get(effectId);
+
+        if (existingEffect != null && existingEffect.getScheduledFuture() != null
+                && !existingEffect.getScheduledFuture().isCancelled()) {
+            existingEffect.resetTicks(totalTicks);
+            return;
+        }
 
         ActiveEffect newEffect = new ActiveEffect(applier, totalTicks);
         activeEffects.put(effectId, newEffect);
@@ -185,7 +190,7 @@ public abstract class Entity {
     @Override
     public synchronized String toString() {
         return String.format(Locale.US,
-                "%-25s | HP: %-4.1f | Damage: %.1f | Attack Speed: %.1f", name, healthPoints, damagePoints, attackSpeed
+                "%-25s | HP: %-4.1f | Damage: %-4.1f | Attack Speed: %.1f", name, healthPoints, damagePoints, attackSpeed
         );
     }
 }
