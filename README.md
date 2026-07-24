@@ -2,12 +2,13 @@
 
 A console-based simulation of the Minecraft combat system, written purely
 in Java. It demonstrates OOP principles, polymorphism, interfaces, generics,
-multithreading, and robust exception handling.
+multithreading, robust exception handling, and unit testing.
 
 ## Technologies
 - Java 17
 - Pure Java, no frameworks
 - `java.util.concurrent` (multithreaded combat engine)
+- JUnit 5 (unit testing)
 
 ## Project Architecture
 - `model/base` — abstract classes (`Entity`, `Mob`)
@@ -17,6 +18,7 @@ multithreading, and robust exception handling.
 - `service` — business logic (combat engine, entity management, game loop, logging)
 - `enums` — location types and mob behaviors
 - `exceptions` — custom exceptions
+- `test` — unit tests for `Entity`, `Player`, and `EntityManager` (mirrors main source structure)
 
 ## Key Concepts Implemented
 
@@ -29,6 +31,16 @@ multithreading, and robust exception handling.
 - **Collections**: `List`, `Optional`, `Comparator`, `ConcurrentHashMap` used for thread-safe state management
 - **Stream API**: used throughout `EntityManager` for filtering (`getEntitiesFilteredBySpecialEffect`), sorting (`getEntitiesSorted`), and mapping (`getMobsByLocation`)
 - **Immutability**: identity fields (`name`, behavior flags) are `final`, preventing state corruption and hashing bugs in collections
+- **Unit Testing**: JUnit 5 tests covering deterministic logic — constructor validation, weapon/armor damage calculations, and `EntityManager` CRUD/sorting/filtering operations
+
+## Testing
+
+Unit tests (JUnit 5) cover the deterministic parts of the codebase:
+- `EntityTest` — constructor validation (name, health, damage, attack speed) and core behavior (`isAlive`, `hasSpecialEffect`)
+- `PlayerTest` — `takeDamage()` with/without armor and `ignoreArmor`, `getDamagePoints()`/`getAttackSpeed()` with/without an equipped weapon
+- `EntityManagerTest` — `addEntity`/`removeEntity`/`findByName` (success and exception paths), sorting, and filtering (`getEntitiesFilteredBySpecialEffect`, `getMobsByLocation`)
+
+Multithreaded combat logic (`CombatSystem`, `AttackTask`) is intentionally not covered by unit tests, since timing-dependent concurrent behavior can't be reliably verified with standard assertions — testing it properly would require tools beyond just unit-testing basics.
 
 ## How to Run
 1. Clone the repository
@@ -52,4 +64,3 @@ Verdict: [Technoblade] beats [Vindicator]. His final HP: 8.5
 ## Known Limitations / Possible Improvements
 - Add more mobs with special effects
 - Improve the logic behind "beating Minecraft" in `AdventureEngine`
-- Add unit tests for deterministic logic (validation, equals/hashCode, sorting/filtering)
